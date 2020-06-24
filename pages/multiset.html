@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>multiset</title>
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/marx/2.0.4/marx.css">
+<style type="text /css">
+    h1{ color: red; }
+    code{ font-family: Menlo, Consolas, 'DejaVu Sans Mono', monospace; }
+</style>
+</head>
+  
+<body>
+<main>
+
+<h1>multiset 使い方まとめ</h1>
+
+<h2>データ型</h2>
+<pre><code class="prettyprint lang-c++">struct D {
+  int x, y, z;
+  D(int _x, int _y, int _z): x(_x), y(_y), z(_z) {}
+};
+</code></pre>
+
+<h2>比較関数オブジェクト</h2>
+<p></p>
+<pre><code class="prettyprint lang-c++">struct Cmp_x {
+  bool operator()(D l, D r) { return l.x < r.x; }
+};</code></pre>
+
+<h2>初期化</h2>
+<p></p>
+<pre><code class="prettyprint lang-c++">multiset&lt;D, Cmp_x&gt; s;</code></pre>
+
+<h2>挿入、削除</h2>
+<p></p>
+<pre><code class="prettyprint lang-c++">D d1(1,2,3), d2(1,4,5), d3(8,8,8);
+s.insert(d1);
+s.insert(d2);
+s.insert(d3);</code></pre>
+
+</main>
+    
+<script>
+console.log('GitHub Pages Sample');
+</script>
+</body>
+</html>
