@@ -1,3 +1,3 @@
 # CompetitiveProgramming
 
-[Github Pages](https://ymtz03.github.io/CompetitiveProgramming/)
+[Github Pages](https://ymtz13.github.io/CompetitiveProgramming/)
