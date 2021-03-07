@@ -1,0 +1,6 @@
+N = int(input())
+A = list(map(int, input().split()))
+sf = sum([i*a for i, a in enumerate(A)])
+sb = sum([i*a for i, a in enumerate(A[::-1])])
+print(sf, sb)
+print(min(sf, sb))

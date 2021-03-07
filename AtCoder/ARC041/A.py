@@ -1,0 +1,5 @@
+x, y = map(int, input().split())
+k = int(input())
+s = min(k, y)
+t = max(0, k-s)
+print(x+s-t)
