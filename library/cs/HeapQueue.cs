@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 class Node<T>
 {
@@ -137,6 +138,8 @@ class Program
     public static void Main()
     {
         var h = new HeapQueue<int>(delegate(int x, int y){ return x-y; } );
+        var v = Console.ReadLine().Split(' ').Select(int.Parse).ToList();
+        Console.WriteLine(string.Join(", ", v));
         Console.WriteLine(h.Count);
         Console.WriteLine(h.Push(30));
         Console.WriteLine(h.Push(10));
@@ -148,5 +151,15 @@ class Program
         Console.WriteLine(h);
         Console.WriteLine(h.Pop());
         Console.WriteLine(h);
+        
+        var node = h.Pop();
+        Console.WriteLine(node);
+        Console.WriteLine(node.Key);
+        Console.WriteLine(node.Value);
+        Console.WriteLine($"{node.Key} {node.Value}");
+        Console.WriteLine(h);
+
+        List<int> X = new List<int>{1, 2, 3, 4, 5};
+        Console.WriteLine(string.Join(", ", X)); // "1, 2, 3, 4, 5"
     }
 }

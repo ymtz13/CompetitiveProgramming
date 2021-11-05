@@ -1,0 +1,5 @@
+N, K = map(int, input().split())
+A = list(map(int, input().split()))
+B = list(map(int, input().split()))
+S = sum([abs(a-b) for a, b in zip(A, B)])
+print('Yes' if S<=K and S%2==K%2 else 'No')

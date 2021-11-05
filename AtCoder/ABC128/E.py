@@ -1,22 +1,36 @@
-from bisect import bisect_left
+from heapq import heappush, heappop
 
-N, Q = [int(c) for c in input().split()]
+N, Q = map(int, input().split())
+E = []
 
-M = [10**10]*Q
+for i in range(N):
+  S, T, X = map(int, input().split())
+  E.append((S - X - 0.5, 1, X, i))
+  E.append((T - X - 0.5, 2, X, i))
 
-STX = []
-for n in range(N):
-    s,t,x = [int(c) for c in input().split()]
-    STX.append((s,t,x))
+for _ in range(Q):
+  D = int(input())
+  E.append((D, 0, None, None))
 
-D = [int(input()) for q in range(Q)]
+E.sort()
 
-for s,t,x in STX:
-    d_l = bisect_left(D, s-x)
-    d_r = bisect_left(D[d_l:], t-x)+d_l
-    for d in range(d_l, d_r):
-        M[d] = min(x,M[d])
+heap = []
+deleted = [False] * N
 
-for q in range(Q):
-    m = -1 if M[q] == 10**10 else M[q]
-    print(m)
+M = 10**6
+
+for _, type, x, i in E:
+  if type == 0:
+    while heap and deleted[heap[0] % M]:
+      heappop(heap)
+
+    if heap:
+      print(heap[0] // M)
+    else:
+      print(-1)
+
+  if type == 1:
+    heappush(heap, x * M + i)
+
+  if type == 2:
+    deleted[i] = True

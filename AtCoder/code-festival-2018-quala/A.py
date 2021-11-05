@@ -1,0 +1,5 @@
+A = int(input())
+B = int(input())
+C = int(input())
+S = int(input())
+print('Yes' if A + B + C <= S and S <= A + B + C + 3 else 'No')

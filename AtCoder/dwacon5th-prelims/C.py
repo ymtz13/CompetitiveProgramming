@@ -1,25 +1,22 @@
 N = int(input())
 S = input()
-
-D = []
-C = []
-M = [None]*N
-m = 0
-for i, c in enumerate(S):
-    if c=='M': m+=1
-    M[i] = m
-    
-    if c=='D': D.append(i)
-    if c=='C': C.append(i)
-
 Q = int(input())
-K = map(int, input().split())
+K = list(map(int, input().split()))
 
-
+Sa = [0]
+Sc = [0]
+for c in S:
+  Sa.append(Sa[-1])
+  Sc.append(Sc[-1])
+  if c == 'D': Sa[-1] += 1
+  if c == 'C': Sc[-1] += 1
 
 for k in K:
+  x = 0
+  ans = 0
+  for i, c in enumerate(S):
+    if c == 'D': x += Sc[min(N, i + k)] - Sc[i]
+    if c == 'C': x -= Sa[i] - Sa[max(0, i - k + 1)]
+    if c == 'M': ans += x
 
-    i = 0
-    for c in C:
-        while D[i+1]<c-k: i+=1
-        
+  print(ans)

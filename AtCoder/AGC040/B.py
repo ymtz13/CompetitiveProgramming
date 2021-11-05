@@ -1,48 +1,39 @@
 N = int(input())
 Q = [tuple(map(int, input().split())) for _ in range(N)]
+Q = [(L, R + 1) for L, R in Q]
 
+QS = sorted(Q, key=lambda x: (x[1], x[0]))
+L0, R0 = QS[0]
+QM = max([R - L for L, R in QS[1:]])
 
-Q.sort(key=lambda x:x[0])
-Lmax_2nd = Q[-2][0]
-Q.sort(key=lambda x:x[1])
-Rmin_2nd = Q[1][1]
-length = [r-l+1 for l,r in Q]
-#print(Q)
+ans = max(R0 - L0, QM)
 
-Q_Lmax = max(Q, key=lambda x:x[0])
-Lmax = Q_Lmax[0]
-Q_Rmin = min(Q, key=lambda x:x[1])
-Rmin = Q_Rmin[1]
+G = [[]]
+for L, R in sorted(Q, reverse=True):
+  if G[-1] and G[-1][0] and G[-1][0][0] != L:
+    G.append([])
+  G[-1].append((L, R))
 
-if Q_Lmax[1]==Rmin: # single Question have maxL & minR
-    print(Rmin-Lmax+1 + max(length))
-    exit()
+#print(G)
+#print(L0, R0)
+#print(QS)
+#print(QM)
 
-Q_lorder = sorted(Q, key=lambda x: x[0]-x[1])
-iQ_longest = 0
-if Q_lorder[iQ_longest]==Q_Lmax and Lmax_2nd < Lmax: iQ_longest += 1
-Q_longest = Q_lorder[iQ_longest]
-xx = Rmin
-if Q_longest[1]==Rmin: xx = Rmin_2nd
-ans = max(Rmin_2nd-Lmax+1, 0) + Q_longest[1]-Q_longest[0]+1
+Lmax = None
+Rmin = None
 
-#print(Q_longest, Rmin, Lmax)
-#print(ans)
+for g in G:
+  L = g[0][0]
+  R = min([r for l, r in g])
 
-#print('LM' , Q_Lmax)
-#print('RM' , Q_Rmin)
+  if Lmax is None:
+    ans = max(ans, QM + max(0, R0 - L))
+    Lmax = L
+    Rmin = R
 
-Lmax_g2 = Q_Rmin[0]
-i = 0
-Rd = Rmin#+1
-gk = 10**10
-Q.append((0,gk))
-while Rd<gk:
-    print(i,Rd, Q[i][1])
-    while Q[i][1]<=Rd: i+=1
-    Rd = Q[i][1]
-    Lmax_g2 = max(Lmax_g2, Q[i-1][0])
-    print(Rd, Rmin, Lmax_g2, max(Rmin-Lmax_g2+1, 0) ,  max(min(Rd, Q_Lmax[1])-Lmax+1, 0))
-    ans = max(ans, max(Rmin-Lmax_g2+1, 0) + max(min(Rd, Q_Lmax[1])-Lmax+1, 0))
+  else:
+    ans = max(ans, Rmin - Lmax + R0 - L)
+
+  Rmin = min(Rmin, R)
 
 print(ans)
