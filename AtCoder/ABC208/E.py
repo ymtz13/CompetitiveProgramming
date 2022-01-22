@@ -1,50 +1,55 @@
-memo = {}
+from bisect import bisect
+from collections import defaultdict
 
-def f(n, k, N):
-  if n==0: return 1 if k>0 else 0
-  if k>=9**n: return 10**n
-  
-  key = k*20+n
-  if key in memo: return memo[key]
+INF = 1 << 60
 
-  retval = 10**(n-1) if n<N else 0
-  for d in range(9, 0, -1):
-    retval += f(n-1, k//d, N)
-  print(n, k, retval)
+S = [[(0, 0), (1, 1)]]
+for i in range(20):
+  s = defaultdict(int)
+  for k, v in S[-1]:
+    for d in range(10):
+      s[k * d] += v
+  S.append(sorted(list(s.items())))
 
-  memo[key] = retval
-  return retval
+T = []
+for s in S:
+  t = []
+  x = 0
+  for k, v in s:
+    x += v
+    t.append((k, x))
+  t.append((INF, t[-1][1]))
+  T.append(t)
 
-print(f(2, 1, 2))
+N, K = input().split()
+N = list(map(int, N))
+K = int(K)
+M = len(N)
 
-N, K = map(int, input().split())
-X = list(map(int, str(N+1)))
-D = len(X)
+P = [1]
+for d in N:
+  P.append(P[-1] * d)
 
-# for check
-check = 0
-for n in range(1, N+1):
-  s = list(map(int, str(n)))
-  prod = 1
-  for c in s: prod *= c
-  if prod <= K: check+=1
-print('check', check)
+ans = 1 if P[-1] <= K else 0
 
-r = 1
-ans = 0
-for i, x in enumerate(X):
-  n = D-i-1
-  if r==0: 
-    ans += 10**n
-    break
+for i, (d, p) in enumerate(zip(N, P)):
+  m = M - i - 1
 
-  if i==0:
-    ans += f(n, K, n)
-    print('hoge', ans)
-  if i>0 and x>0: ans += 10**n
-  for v in range(1, x):
-    ans += f(n, K//r//v, n)
+  for x in range(d):
+    if i == 0 and x == 0: continue
+    t = p * x
+    if t:
+      j = bisect(T[m], (K // t, INF)) - 1
+      _, n = T[m][j]
+    else:
+      n = 10**m
 
-  r *= x
+    ans += n
 
-print(ans-1)
+for m in range(1, M):
+  for x in range(1, 10):
+    j = bisect(T[m - 1], (K // x, INF)) - 1
+    _, n = T[m - 1][j]
+    ans += n
+
+print(ans)

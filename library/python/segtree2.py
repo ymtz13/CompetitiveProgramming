@@ -1,22 +1,24 @@
 class SegTree:
   def __init__(self, N, fill, function):
     L = 1
-    k = 1
-    while k < N:
+    M = 1
+    while M < N:
       L += 1
-      k <<= 1
+      M <<= 1
 
     segsize = [None] * L
     data = [None] * L
     for l in range(L):
       segsize[l] = 1 << l
-      data[l] = [fill] * (L - 1 - l)
+      data[l] = [fill] * (M // segsize[l])
 
     self.L = L
     self.segsize = segsize
     self.data = data
     self.function = function
     self.bottom = self.data[0]
+
+    self.zip = [(l, segsize[l], data[l]) for l in range(L)]
 
   def update(self, i, value):
     function = self.function
@@ -30,17 +32,28 @@ class SegTree:
       layer = layer_above
 
   def query(self, qbgn, qend):
-    for l in range(self.L):
-      mid = 1 << l
-      if (qbgn ^ qend) & mid: break
-    
-    lvals = []
-    rvals = []
+    vals = []
+    #segs = []
 
-    for i in range(l):
-      if (qend-mid): break
+    q = qbgn
+    for l, ssize, data in self.zip:
+      if q & ssize and q + ssize <= qend:
+        #segs.append((q, ssize))
+        vals.append(data[q >> l])
+        q += ssize
 
-    pass
+    for l, ssize, data in reversed(self.zip):
+      if q + ssize <= qend:
+        #segs.append((q, ssize))
+        vals.append(data[q >> l])
+        q += ssize
+
+    retval = vals[0]
+    for val in vals[1:]:
+      retval = self.function(retval, val)
+
+    #return segs
+    return retval
 
   def __str__(self):
     s = []
@@ -49,21 +62,42 @@ class SegTree:
     return '\n'.join(s)
 
 
-s = SegTree(10, 0, max)
-s.update2(5, 6)
-s.update2(9, 7)
-s.update2(3, 3)
+s = SegTree(100, 0, lambda x, y: x + y)
+print(s)
+
+s.update(5, 6)
+s.update(9, 7)
+s.update(3, 3)
 
 print(s)
 
-print(s.query(2, 6))
-print(s.query3(2, 6))
+arr = [0] * 100
+arr[5] = 6
+arr[9] = 7
+arr[3] = 3
+
+
+def flat(segs):
+  retval = []
+  for q, ssize in segs:
+    retval.extend(list(range(q, q + ssize)))
+  return retval
+
+
+def test(segs, qbgn, qend):
+  assert flat(segs) == list(range(qbgn, qend))
+  cnt = [0] * 1000
+  for _, ssize in segs:
+    cnt[ssize] += 1
+  assert max(cnt) <= 2
+
+
+def testval(retval, qbgn, qend):
+  assert retval == sum(arr[qbgn:qend])
+
 
 for qbgn in range(10):
-  for qend in range(qbgn + 2, 10):
-    v = s.query(qbgn, qend)
-    v3 = s.query3(qbgn, qend)
-    assert v == v3, (qbgn, qend, v, v3)
-
-# query2 は query より速い
-# update2 は update より速い
+  for qend in range(qbgn + 1, 101):
+    #test(s.query(qbgn, qend), qbgn, qend)
+    #print(qbgn, qend, s.query(qbgn, qend))
+    testval(s.query(qbgn, qend), qbgn, qend)
