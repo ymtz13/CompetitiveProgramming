@@ -1,133 +1,112 @@
 class SegTree:
-  def __init__(self, N, fill, function):
+  def __init__(self, N, function, identity, initialData=None):
     L = 1
-    k = 1
-    while k < N:
+    M = 1
+    while M < N:
       L += 1
-      k <<= 1
+      M <<= 1
 
-    segsize = [None] * L
+    segsize = [1 << l for l in range(L)]
     data = [None] * L
-    for l in range(L):
-      segsize[l] = 1 << (L - l - 1)
-      data[l] = [fill] * (1 << l)
+
+    if initialData:
+      layer = data[0] = initialData[:M] + [identity] * (M - len(initialData))
+      for i in range(1, L):
+        layer = data[i] = [function(*v) for v in zip(layer[0::2], layer[1::2])]
+
+    else:
+      for l in range(L):
+        data[l] = [identity] * (M // segsize[l])
 
     self.L = L
     self.segsize = segsize
     self.data = data
     self.function = function
-    self.bottom = self.data[-1]
+    self.bottom = self.data[0]
+
+    self.zip = [(l, segsize[l], data[l]) for l in range(L)]
 
   def update(self, i, value):
-    self.bottom[i] = value
-
-    for l in range(self.L - 2, -1, -1):
-      i //= 2
-      self.data[l][i] = self.function(*self.data[l + 1][i * 2:i * 2 + 2])
-
-  def update2(self, i, value):
     function = self.function
     layer = self.bottom
     layer[i] = value
 
-    for layer_above in self.data[-2::-1]:
+    for layer_above in self.data[1:]:
       i >>= 1
       j = i << 1
       layer_above[i] = function(layer[j], layer[j + 1])
       layer = layer_above
 
-  def query(self, ibgn, iend, l=0):
-    ssize = self.segsize[l]
-    if ibgn % ssize == 0 and iend - ibgn == ssize:
-      return self.data[l][ibgn // ssize]
-
-    imid = ibgn - ibgn % ssize + ssize // 2
-    if iend <= imid or imid <= ibgn:
-      return self.query(ibgn, iend, l + 1)
-    return self.function(self.query(ibgn, imid, l + 1),
-                         self.query(imid, iend, l + 1))
-
-  def query2(self, qbgn, qend):
-    segs = [(qbgn, qend, 0)]
+  def query(self, qbgn, qend):
     vals = []
-    for ibgn, iend, l in segs:
-      ssize = self.segsize[l]
-      if ibgn % ssize == 0 and iend - ibgn == ssize:
-        vals.append(self.data[l][ibgn // ssize])
-        continue
+    #segs = []
 
-      imid = ibgn - ibgn % ssize + ssize // 2
-      if iend <= imid or imid <= ibgn:
-        segs.append((ibgn, iend, l + 1))
-      else:
-        segs.append((ibgn, imid, l + 1))
-        segs.append((imid, iend, l + 1))
+    q = qbgn
+    for l, ssize, data in self.zip:
+      if q & ssize and q + ssize <= qend:
+        #segs.append((q, ssize))
+        vals.append(data[q >> l])
+        q += ssize
+
+    for l, ssize, data in reversed(self.zip):
+      if q + ssize <= qend:
+        #segs.append((q, ssize))
+        vals.append(data[q >> l])
+        q += ssize
 
     retval = vals[0]
     for val in vals[1:]:
       retval = self.function(retval, val)
+
+    #return segs
     return retval
-
-  def query3(self, qbgn, qend):
-    segsize = self.segsize
-
-    segs = [(qbgn, qend)]
-    l = 0
-    vals = []
-
-    for l, layer in enumerate(self.data):
-      ssize = segsize[l]
-      segs_next = []
-      for ibgn, iend in segs:
-        if ibgn % ssize == 0 and iend - ibgn == ssize:
-          vals.append(layer[ibgn // ssize])
-          continue
-
-        imid = ibgn - ibgn % ssize + ssize // 2
-        if iend <= imid or imid <= ibgn:
-          segs_next.append((ibgn, iend))
-        else:
-          segs_next.append((ibgn, imid))
-          segs_next.append((imid, iend))
-      segs = segs_next
-
-    function = self.function
-    retval = vals[0]
-    for val in vals[1:]:
-      retval = function(retval, val)
-    return retval
-
-  def query4(self, qbgn, qend):
-    mid = 1
-    while not (qbgn ^ qend) & mid:
-      mid <<= 1
-    
-    
-
-    pass
 
   def __str__(self):
     s = []
-    for l, row in enumerate(self.data):
+    for l, row in enumerate(self.data[::-1]):
       s.append('{:2d} {}'.format(l, row))
     return '\n'.join(s)
 
 
-s = SegTree(10, 0, max)
-s.update2(5, 6)
-s.update2(9, 7)
-s.update2(3, 3)
+s = SegTree(100, lambda x, y: x + y, 0)
+print(s)
+
+s.update(5, 6)
+s.update(9, 7)
+s.update(3, 3)
 
 print(s)
 
-print(s.query(2, 6))
-print(s.query3(2, 6))
+arr = [0] * 100
+arr[5] = 6
+arr[9] = 7
+arr[3] = 3
 
-for qbgn in range(10):
-  for qend in range(qbgn + 2, 10):
-    v = s.query(qbgn, qend)
-    v3 = s.query3(qbgn, qend)
-    assert v == v3, (qbgn, qend, v, v3)
 
-# query2 は query より速い
-# update2 は update より速い
+def flat(segs):
+  retval = []
+  for q, ssize in segs:
+    retval.extend(list(range(q, q + ssize)))
+  return retval
+
+
+def test(segs, qbgn, qend):
+  assert flat(segs) == list(range(qbgn, qend))
+  cnt = [0] * 1000
+  for _, ssize in segs:
+    cnt[ssize] += 1
+  assert max(cnt) <= 2
+
+
+def testval(retval, qbgn, qend):
+  assert retval == sum(arr[qbgn:qend])
+
+
+# for qbgn in range(10):
+#   for qend in range(qbgn + 1, 101):
+#     #test(s.query(qbgn, qend), qbgn, qend)
+#     #print(qbgn, qend, s.query(qbgn, qend))
+#     testval(s.query(qbgn, qend), qbgn, qend)
+
+st = SegTree(10, lambda x, y: x + y, 0, list(range(20)))
+print(st)
