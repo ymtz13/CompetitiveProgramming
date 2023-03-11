@@ -1,38 +1,39 @@
 mod = 998244353
 
+N = tuple(map(int, input()))
+M = int(input())
+C = tuple(map(int, input()))
 
-def toArray(B):
-  return [i for i in range(10) if B & (1 << i)]
+dpE = [0] * 1024
+dpL = [0] * 1024
+
+for n in N:
+  dpE_next = [0] * 1024
+  dpL_next = [0] * 1024
+
+  for v in range(10):
+    b = 1 << v
+
+    if v < n:
+      for f in range(1024):
+        t = f | b
+        dpL_next[t] += dpL[f] + dpE[f]
+        dpL_next[t] %= mod
+
+    if v == n:
+      for f in range(1024):
+        t = f | b
+        dpL_next[t] += dpL[f]
+        dpL_next[t] %= mod
+        dpE_next[t] += dpE[f]
+        dpE_next[t] %= mod
+
+    if v > n:
+      for f in range(1024):
+        t = f | b
+        dpL_next[t] += dpL[f]
+        dpL_next[t] %= mod
 
 
-def toB(C):
-  return sum([1 << i for i in C])
-
-
-def f(N, C):
-  # 0 <= x < 10**N
-  S = sum(C)
-  V = (pow(10, N, mod) - 1) * pow(9, mod - 2, mod) % mod
-  X = pow(len(C), N - 1, mod)
-  return S * V * X % mod
-
-
-def g(N, C):
-  retval = 0
-  for mask in range(1 << len(C)):
-    CC = [c for i, c in enumerate(C) if mask & (1 << i)]
-    sign = (-1)**(len(C) - len(CC))
-    retval += sign * f(N, CC)
-    print(CC, sign)
-    retval %= mod
-
-  return retval
-
-
-print(g(3, [1, 2, 3]))
-print('-------')
-
-print(f(3, []))
-print(f(3, [1]))
-print(f(3, [2]))
-print(f(3, [1, 2]))
+  dpE = dpE_next
+  dpL = dpL_next

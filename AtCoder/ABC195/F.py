@@ -1,22 +1,22 @@
 A, B = map(int, input().split())
 
-def gcd(a, b):
-  if a<b: a, b = b,a
-  while b:
-    a, b = b, a%b
-  return a
+P = []
+for x in range(2, 72):
+  if all([x % p for p in P]): P.append(x)
 
-E = [[] for _ in range(B-A+1)]
+dp = [0] * (1 << len(P))
+dp[0] = 1
 
-for x in range(A, B+1):
-  for y in range(x+1, B+1):
-    if gcd(x, y)>1:
-      #print(x, y)
-      #E[x-A].append(y-A)
-      E[y-A].append(x-A)
+for x in range(A, B + 1):
+  fx = 0
+  for i, p in enumerate(P):
+    if x % p == 0: fx += (1 << i)
 
-print(E)
+  dp_next = dp[:]
+  for f, v in enumerate(dp):
+    if f & fx: continue
+    dp_next[f + fx] += v
 
-for i, e in enumerate(E):
-  
+  dp = dp_next
 
+print(sum(dp))
