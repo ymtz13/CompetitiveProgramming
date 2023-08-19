@@ -1,9 +1,9 @@
 from collections import defaultdict
-from bisect import bisect_left
+from bisect import bisect
 
 
 class SegTree:
-    def __init__(self, N):
+    def __init__(self, N, function, identity, initialData=None):
         L = 1
         M = 1
         while M < N:
@@ -13,24 +13,32 @@ class SegTree:
         segsize = [1 << l for l in range(L)]
         data = [None] * L
 
-        for l in range(L):
-            data[l] = [0] * (M // segsize[l])
+        if initialData:
+            layer = data[0] = initialData[:M] + [identity] * (M - len(initialData))
+            for i in range(1, L):
+                layer = data[i] = [function(*v) for v in zip(layer[0::2], layer[1::2])]
+
+        else:
+            for l in range(L):
+                data[l] = [identity] * (M // segsize[l])
 
         self.L = L
         self.segsize = segsize
         self.data = data
+        self.function = function
         self.bottom = self.data[0]
 
         self.zip = [(l, segsize[l], data[l]) for l in range(L)]
 
     def update(self, i, value):
+        function = self.function
         layer = self.bottom
         layer[i] = value
 
         for layer_above in self.data[1:]:
             i >>= 1
             j = i << 1
-            layer_above[i] = layer[j] + layer[j + 1]
+            layer_above[i] = function(layer[j], layer[j + 1])
             layer = layer_above
 
     def query(self, qbgn, qend):
@@ -52,7 +60,7 @@ class SegTree:
 
         retval = vals[0]
         for val in vals[1:]:
-            retval += val
+            retval = self.function(retval, val)
 
         # return segs
         return retval
@@ -64,56 +72,47 @@ class SegTree:
         return "\n".join(s)
 
 
+M = 700
+
 N, Q = map(int, input().split())
 A = list(map(int, input().split()))
+LR = [tuple(map(int, input().split())) + (i,) for i in range(Q)]
+Queries = [[] for _ in range(N + 1)]
+for l, r, i in LR:
+    Queries[r].append((l, i))
 
-Query = [[] for _ in range(N + 1)]
-for i in range(Q):
-    L, R = map(int, input().split())
-    Query[R].append((i, L))
+D = defaultdict(list)
+for i, a in enumerate(A, 1):
+    D[a].append(i)
 
+X = {key: value for key, value in D.items() if len(value) > M}
 
-M = 400
-M = 0
+ans = [0] * Q
 
-C = defaultdict(int)
-for a in A:
-    C[a] += 1
-
-D = {}
-E = {}
-for k, v in C.items():
-    if v > M:
-        D[k] = len(D)
-    else:
-        E[k] = []
-
-S = [[] for _ in D]
-
-st = SegTree(N + 1)
-
-ans = [None] * Q
+st = SegTree(N + 2, lambda x, y: x + y, 0)
 
 for r, a in enumerate(A, 1):
-    if a in E:
-        e = E[a]
-        e.append(r)
-        cnt = 0
-        for i in reversed(e):
-            st.update(i, cnt * (cnt - 1))
-            cnt += 1
+    if a in X:
+        continue
 
-    if a in D:
-        S[D[a]].append(r)
+    d = D[a]
+    j = d.index(r)
+    if j >= 2:
+        for m, x in enumerate(reversed(d[: j - 1]), 1):
+            st.update(x, st.bottom[x] + m)
 
-    for i, l in Query[r]:
-        a = st.query(l, r + 1) // 2
-        for s in S:
-            cnt = len(s) - bisect_left(s, l)
-            a += cnt * (cnt - 1) * (cnt - 2) // 6
+    for l, iq in Queries[r]:
+        ans[iq] += st.query(l, r + 1)
 
-        ans[i] = a
+    # print(r, st.bottom)
 
+for l, r, i in LR:
+    aa = 0
+    for x in X.values():
+        cnt = bisect(x, r) - bisect(x, l - 1)
+        aa += cnt * (cnt - 1) * (cnt - 2) // 6
+
+    ans[i] += aa
 
 for a in ans:
     print(a)

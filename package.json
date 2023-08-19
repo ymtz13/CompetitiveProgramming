@@ -1,0 +1,6 @@
+{
+    "scripts": {
+        "rust": "f() { cp library/rust/_template.rs $INIT_CWD/$1; }; f"
+    },
+    "license": "MIT"
+}

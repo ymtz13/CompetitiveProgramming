@@ -1,0 +1,172 @@
+fn main() {
+    input();
+    let mut alist: Vec<usize> = input()
+        .split_whitespace()
+        .map(|c| c.parse().unwrap())
+        .collect();
+
+    let (q,): (usize,) = Read::read();
+    let mut ans = Vec::new();
+
+    for _ in 0..q {
+        let query: Vec<usize> = input()
+            .split_whitespace()
+            .map(|c| c.parse().unwrap())
+            .collect();
+        let k: usize = query[1] - 1;
+
+        if query[0] == 1 {
+            alist[k] = query[2];
+        } else {
+            ans.push(alist[k])
+        }
+    }
+
+    for a in &ans {
+        println!("{}", a);
+    }
+}
+
+//=============================================================================
+
+fn input() -> String {
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input).unwrap();
+    input
+}
+
+trait Read {
+    fn read() -> Self;
+}
+
+impl<T1> Read for (T1,)
+where
+    T1: std::str::FromStr,
+{
+    fn read() -> (T1,) {
+        let s = input();
+        let mut s = s.split_whitespace();
+        let v1 = s.next().unwrap().parse();
+
+        if let Ok(v1) = v1 {
+            return (v1,);
+        }
+
+        panic!();
+    }
+}
+
+impl<T1, T2> Read for (T1, T2)
+where
+    T1: std::str::FromStr,
+    T2: std::str::FromStr,
+{
+    fn read() -> (T1, T2) {
+        let s = input();
+        let mut s = s.split_whitespace();
+        let v1 = s.next().unwrap().parse();
+        let v2 = s.next().unwrap().parse();
+
+        if let (Ok(v1), Ok(v2)) = (v1, v2) {
+            return (v1, v2);
+        }
+
+        panic!();
+    }
+}
+
+impl<T1, T2, T3> Read for (T1, T2, T3)
+where
+    T1: std::str::FromStr,
+    T2: std::str::FromStr,
+    T3: std::str::FromStr,
+{
+    fn read() -> (T1, T2, T3) {
+        let s = input();
+        let mut s = s.split_whitespace();
+        let v1 = s.next().unwrap().parse();
+        let v2 = s.next().unwrap().parse();
+        let v3 = s.next().unwrap().parse();
+
+        if let (Ok(v1), Ok(v2), Ok(v3)) = (v1, v2, v3) {
+            return (v1, v2, v3);
+        }
+
+        panic!();
+    }
+}
+
+impl<T1, T2, T3, T4> Read for (T1, T2, T3, T4)
+where
+    T1: std::str::FromStr,
+    T2: std::str::FromStr,
+    T3: std::str::FromStr,
+    T4: std::str::FromStr,
+{
+    fn read() -> (T1, T2, T3, T4) {
+        let s = input();
+        let mut s = s.split_whitespace();
+        let v1 = s.next().unwrap().parse();
+        let v2 = s.next().unwrap().parse();
+        let v3 = s.next().unwrap().parse();
+        let v4 = s.next().unwrap().parse();
+
+        if let (Ok(v1), Ok(v2), Ok(v3), Ok(v4)) = (v1, v2, v3, v4) {
+            return (v1, v2, v3, v4);
+        }
+
+        panic!();
+    }
+}
+
+impl<T1, T2, T3, T4, T5> Read for (T1, T2, T3, T4, T5)
+where
+    T1: std::str::FromStr,
+    T2: std::str::FromStr,
+    T3: std::str::FromStr,
+    T4: std::str::FromStr,
+    T5: std::str::FromStr,
+{
+    fn read() -> (T1, T2, T3, T4, T5) {
+        let s = input();
+        let mut s = s.split_whitespace();
+        let v1 = s.next().unwrap().parse();
+        let v2 = s.next().unwrap().parse();
+        let v3 = s.next().unwrap().parse();
+        let v4 = s.next().unwrap().parse();
+        let v5 = s.next().unwrap().parse();
+
+        if let (Ok(v1), Ok(v2), Ok(v3), Ok(v4), Ok(v5)) = (v1, v2, v3, v4, v5) {
+            return (v1, v2, v3, v4, v5);
+        }
+
+        panic!();
+    }
+}
+
+impl<T1, T2, T3, T4, T5, T6> Read for (T1, T2, T3, T4, T5, T6)
+where
+    T1: std::str::FromStr,
+    T2: std::str::FromStr,
+    T3: std::str::FromStr,
+    T4: std::str::FromStr,
+    T5: std::str::FromStr,
+    T6: std::str::FromStr,
+{
+    fn read() -> (T1, T2, T3, T4, T5, T6) {
+        let s = input();
+        let mut s = s.split_whitespace();
+        let v1 = s.next().unwrap().parse();
+        let v2 = s.next().unwrap().parse();
+        let v3 = s.next().unwrap().parse();
+        let v4 = s.next().unwrap().parse();
+        let v5 = s.next().unwrap().parse();
+        let v6 = s.next().unwrap().parse();
+
+        if let (Ok(v1), Ok(v2), Ok(v3), Ok(v4), Ok(v5), Ok(v6)) = (v1, v2, v3, v4, v5, v6) {
+            return (v1, v2, v3, v4, v5, v6);
+        }
+
+        panic!();
+    }
+}
