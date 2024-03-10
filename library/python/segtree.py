@@ -1,12 +1,12 @@
 class SegTree:
-    def __init__(self, N, function, identity, initial=[]):
+    def __init__(self, N, identity, function, initial=[]):
         # L = 3, M = 4
         # l=2 : 1
         # l=1 : 10      11
         # l=0 : 100 101 110 111
 
         L = 1
-        M = 1  # N以上の最小の整数
+        M = 1  # N以上の最小の2冪
         while M < N:
             L += 1
             M <<= 1
@@ -76,47 +76,3 @@ class SegTree:
         for l in range(self.L):
             s.append("{:2d} {}".format(l, self.data[1 << l : 2 << l]))
         return "\n".join(s)
-
-
-s = SegTree(100, lambda x, y: x + y, 0)
-print(s)
-
-s.update(5, 6)
-s.update(9, 7)
-s.update(3, 3)
-
-print(s)
-
-arr = [0] * 100
-arr[5] = 6
-arr[9] = 7
-arr[3] = 3
-
-
-def flat(segs):
-    retval = []
-    for q, ssize in segs:
-        retval.extend(list(range(q, q + ssize)))
-    return retval
-
-
-def test(segs, qbgn, qend):
-    assert flat(segs) == list(range(qbgn, qend))
-    cnt = [0] * 1000
-    for _, ssize in segs:
-        cnt[ssize] += 1
-    assert max(cnt) <= 2
-
-
-def testval(retval, qbgn, qend):
-    assert retval == sum(arr[qbgn:qend])
-
-
-for qbgn in range(10):
-    for qend in range(qbgn + 1, 101):
-        # test(s.query(qbgn, qend), qbgn, qend)
-        # print(qbgn, qend, s.query(qbgn, qend))
-        testval(s.query(qbgn, qend), qbgn, qend)
-
-st = SegTree(10, lambda x, y: x + y, 0, list(range(20)))
-print(st)

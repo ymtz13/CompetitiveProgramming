@@ -1,26 +1,48 @@
 N, K = map(int, input().split())
 S = input()
 
-dp = [[0] * (N + 1) for _ in range(N + 1)]
-dp[0][0] = 1
+M = N + 10
+offsetMax = 1
+offsetMin = N + 5
+
+dp = [[0] * M for _ in range(M)]
+dp[offsetMax][offsetMin] = 1
 
 mod = 10**9 + 7
 
-for n, c in enumerate(S, 1):
-  for n0 in range(n + 1):
-    n1 = n - n0
-    if abs(n1 - n0) > K: continue
+for c in S:
+    dp_next = [[0] * M for _ in range(M)]
 
-    if c != '1' and n0 > 0: dp[n0][n1] += dp[n0 - 1][n1]
-    if c != '0' and n1 > 0: dp[n0][n1] += dp[n0][n1 - 1]
-    dp[n0][n1] %= mod
+    for fMax in range(-1, N + 1):
+        for fMin in range(-N, 2):
+            v = dp[fMax + offsetMax][fMin + offsetMin]
 
-for d in dp:
-  print(dp)
+            if c in "0?":
+                tMax = fMax + 1 if fMax >= 0 else 1
+                tMin = fMin + 1 if fMin <= 0 else 1
+                if tMax <= K:
+                    dp_next[tMax + offsetMax][tMin + offsetMin] += v
+                    dp_next[tMax + offsetMax][tMin + offsetMin] %= mod
+
+            if c in "1?":
+                tMax = fMax - 1 if fMax >= 0 else -1
+                tMin = fMin - 1 if fMin <= 0 else -1
+                if tMin >= -K:
+                    dp_next[tMax + offsetMax][tMin + offsetMin] += v
+                    dp_next[tMax + offsetMax][tMin + offsetMin] %= mod
+
+    dp = dp_next
+
+    # print(c)
+    # for fMax, row in enumerate(dp):
+    #     for fMin, v in enumerate(row):
+    #         if v:
+    #             print((fMax - offsetMax, fMin - offsetMin), v)
 
 ans = 0
-for n0 in range(N + 1):
-  n1 = N - n0
-  ans += dp[n0][n1]
+for row in dp:
+    for v in row:
+        ans += v
+        ans %= mod
 
 print(ans)

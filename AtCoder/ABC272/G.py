@@ -1,58 +1,42 @@
 from collections import defaultdict
-
-M = 1000000
-F = list(range(M))
-P = []
-for p in range(2, M):
-  if F[p] != p: continue
-  P.append(p)
-  for r in range(p * 2, M, p):
-    F[r] = p
-
-memo = {}
-
-
-def factor(X):
-  if X < M: return F[X]
-  if X in memo: return memo[X]
-
-  for p in P:
-    if p * p > X:
-      memo[X] = X
-      break
-    if X % p == 0:
-      memo[X] = p
-      break
-
-  return memo[X]
-
+from random import choice
 
 N = int(input())
 A = list(map(int, input().split()))
 
-for a0 in A:
-  D = [abs(a - a0) for a in A if a != a0]
-  count = defaultdict(int)
+S = set()
 
-  for d in D:
-    if d == 1: continue
+for _ in range(50):
+    a1 = choice(A)
+    a2 = choice(A)
+    d = a2 - a1
+    if d == 0:
+        continue
 
-    p = d
-    s = set()
-    while p > 1:
-      f = factor(p)
-      p //= f
-      if f in s: continue
-      s.add(f)
+    if d % 4 == 0:
+        S.add(4)
+    while d % 2 == 0:
+        d //= 2
 
-      if f == 2: continue
-      count[f] += 1
+    for p in range(3, d + 1, 2):
+        if d == 1:
+            break
+        if p * p > d:
+            S.add(d)
+            break
+        if d % p == 0:
+            S.add(p)
+        while d % p == 0:
+            d //= p
 
-    if d % 4 == 0: count[4] += 1
+for s in S:
+    count = defaultdict(int)
+    for a in A:
+        r = a % s
+        count[r] += 1
 
-  for key, value in count.items():
-    if value >= N // 2:
-      print(key)
-      exit()
+    if max(count.values()) > N // 2:
+        print(s)
+        exit()
 
 print(-1)

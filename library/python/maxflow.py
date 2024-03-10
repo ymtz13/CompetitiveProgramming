@@ -31,6 +31,7 @@ def max_flow(N: int, S: int, T: int, edges: List[Tuple[int, int, int]]):
         EdgesFrom[i] = EdgesTo[j] = f
         EdgesFrom[j] = EdgesTo[i] = t
         EdgesCap[i] = cap
+        # EdgesCap[j] = cap # 無向辺の場合はアンコメントする
 
     visited = [-1] * N
     come_through = [-1] * N
@@ -73,7 +74,10 @@ def max_flow(N: int, S: int, T: int, edges: List[Tuple[int, int, int]]):
 
         total_flow += flow
 
-    return total_flow
+    # 残余グラフ上でSから到達可能な頂点集合
+    reachable = [t for t in range(N) if visited[t] == trial]
+
+    return (total_flow, reachable)
 
 
 # 0 --[2]-> 1 --[5]-> 2

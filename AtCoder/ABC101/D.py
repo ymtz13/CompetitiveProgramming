@@ -1,27 +1,22 @@
-import numpy as np
-import matplotlib.pyplot as plt
+K = int(input())
+candidates = list(range(1, 100000))
 
-def s(n):
-    r = 0
-    while n:
-        r+=n%10
-        n//=10
-    return r
+for d in range(6, 25):
+    r = 10 ** (d - 5)
+    for x in range(10**4, 10**5):
+        candidates.append(x * r + r - 1)
 
-N = np.arange(1,10**5)
-#N=[]
-#for i in range(16):
-#  for j in range(1, 10):
-#    N.append((j+1)*(10**i)-1)
+C = []
+cmin = (10**21, 1)
+for n in reversed(candidates):
+    denom = sum(map(int, str(n)))
 
-S = []
-for n in N:
-    S.append(s(n))
-S = np.array(S)
+    if n * cmin[1] <= cmin[0] * denom:
+        C.append(n)
+        cmin = (n, denom)
 
-#plt.plot(N,S)
-#plt.plot(N,S/N)
-plt.plot(N,N/S)
-#plt.plot(np.log(N),np.log(S/N))
-plt.grid()
-plt.show()
+
+C.reverse()
+
+for c in C[:K]:
+    print(c)

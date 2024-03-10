@@ -1,33 +1,32 @@
 N, K = map(int, input().split())
-W = []
-S = []
-for _ in range(N):
-    w, p = map(int, input().split())
-    W.append(w)
-    S.append(w*p/100)
+WP = [tuple(map(int, input().split())) for _ in range(N)]
+
+INF = 1 << 60
 
 
+def f(P):
+    # (sum wp)/(sum w) > P
+    # (sum wp) - (sum w)P > 0
+    # sum (wp - wP) > 0
 
-# w0 s0
-# s1/w1 > s2/w2
+    dp = [-INF] * (K + 1)
+    dp[0] = 0
 
-# (s0+s1)/(w0+w1) < (s0+s2)/(w0+w2)
-# (s0+s1)*(w0+w2) < (s0+s2)*(w0+w1)
-# s0w2 + s1w0 + s1w2 < s0w1 + s2w0 + s2w1
+    for w, p in WP:
+        v = w * (p - P)
+        for k in range(K, 0, -1):
+            dp[k] = max(dp[k], dp[k - 1] + v)
+
+    return dp[K] > 0
 
 
+ok = 0
+ng = 101
+while ng - ok > 1e-8:
+    tgt = (ng + ok) / 2
+    if f(tgt):
+        ok = tgt
+    else:
+        ng = tgt
 
-# d0 = s0/w0
-# d1 = s1/w1
-# d+ = (s0+s1)/(w0+w1)
-
-#     +-- [X] --+
-# V --+         +-- 0
-#     +-- [Y] --+
-
-# I[X]X = V
-# I[Y]Y = V
-# (I[X]+I[Y])? = V
-
-# ? = V/(I[X]+I[Y]) = V/(V/X+V/Y) = 1/(1/X+1/Y)
-# 1/? = 1/X + 1/Y
+print(ok)

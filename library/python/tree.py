@@ -11,11 +11,13 @@ class Tree:
         queue = deque([(root, None, 0)])
         parent = [None] * (N + 1)
         depth = [None] * (N + 1)
+        order = []
 
         while queue:
             q, p, d = queue.popleft()
             parent[q] = p
             depth[q] = d
+            order.append(q)
 
             for e in E[q]:
                 if e == p:
@@ -39,6 +41,7 @@ class Tree:
         self.E = E
         self.parent = parent
         self.depth = depth
+        self.order = order
         self.ancestors = ancestors
 
     def ancestorOf(self, q, k):

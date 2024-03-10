@@ -1,27 +1,23 @@
 class Mod:
     def __init__(self, mod, fMax):
-        F = [1]
+        factorial = [1]
         for n in range(1, fMax + 10):
-            F.append(F[-1] * n % mod)
+            factorial.append(factorial[-1] * n % mod)
 
-        Finv = [pow(F[-1], mod - 2, mod)]
-        for n in range(len(F) - 1, 0, -1):
-            Finv.append(Finv[-1] * n % mod)
-        Finv.reverse()
+        factorial_inv = [pow(factorial[-1], mod - 2, mod)]
+        for n in range(len(factorial) - 1, 0, -1):
+            factorial_inv.append(factorial_inv[-1] * n % mod)
+        factorial_inv.reverse()
 
         self.mod = mod
         self.fMax = fMax
-        self.F = F
-        self.Finv = Finv
+        self.factorial = factorial
+        self.factorial_inv = factorial_inv
 
     def comb(self, n, k):
-        return self.F[n] * self.Finv[n - k] * self.Finv[k] % self.mod
-
-
-mod = Mod(10**9 + 7, 30)
-
-assert mod.comb(8, 0) == 1
-assert mod.comb(8, 1) == 8
-assert mod.comb(8, 2) == 28
-assert mod.comb(8, 3) == 56
-assert mod.comb(8, 4) == 70
+        return (
+            self.factorial[n]
+            * self.factorial_inv[n - k]
+            * self.factorial_inv[k]
+            % self.mod
+        )

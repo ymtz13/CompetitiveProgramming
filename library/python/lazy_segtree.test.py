@@ -1,6 +1,5 @@
 from lazy_segtree import LazySegTree
 from random import randint, seed
-from time import perf_counter
 
 seed(0)
 

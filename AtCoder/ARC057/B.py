@@ -1,24 +1,27 @@
-from math import ceil
+N, K = map(int, input().split())
+A = [int(input()) for _ in range(N)]
 
-N, K = list(map(int, input().split()))
-A = [None] + [int(input()) for _ in range(N)]
+if K == sum(A):
+    print(1)
+    exit()
 
-dp = [0] + [-1 for _ in range(N)]
+Sprev = A[0]
+dp = [0, 1]
+for a in A[1:]:
+    S = Sprev + a
+    dp_next = [0]
+    for n in range(1, len(dp)):
+        v = dp[n - 1] * S // Sprev + 1
+        dp_next.append(min(dp[n], v if v <= S else 1 << 60))
 
-M = 0
-for day in range(1,N+1):
-    print(day, dp)
-    dp_next = [v for v in dp]
-    for n in range(1,day+1):
-        win_goodday = ceil((dp[n-1]*A[day]+1)/M) if M>0 else 1
-        print(n, win_goodday)
-        if win_goodday>A[day]: continue
-        if dp_next[n]==-1 or win_goodday+dp[n-1] < dp_next[n] : dp_next[n] = win_goodday+dp[n-1]
+    v = dp[-1] * S // Sprev + 1
+    dp_next.append(v if v <= S else 1 << 60)
+
+    Sprev = S
     dp = dp_next
-    M+=A[day]
 
-print(day, dp)
+for i, k in enumerate(dp):
+    if k <= K:
+        ans = i
 
-for n in range(N+1):
-    if dp[n]<0: break
-print(n)
+print(ans)
