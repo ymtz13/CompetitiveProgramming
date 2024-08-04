@@ -1,110 +1,49 @@
-class SegTree:
-  def __init__(self, N, function, identity, initialData=None):
-    L = 1
-    M = 1
-    while M < N:
-      L += 1
-      M <<= 1
-
-    segsize = [1 << l for l in range(L)]
-    data = [None] * L
-
-    if initialData:
-      layer = data[0] = initialData[:M] + [identity] * (M - len(initialData))
-      for i in range(1, L):
-        layer = data[i] = [function(*v) for v in zip(layer[0::2], layer[1::2])]
-
-    else:
-      for l in range(L):
-        data[l] = [identity] * (M // segsize[l])
-
-    self.L = L
-    self.segsize = segsize
-    self.data = data
-    self.function = function
-    self.bottom = self.data[0]
-
-    self.zip = [(l, segsize[l], data[l]) for l in range(L)]
-
-  def update(self, i, value):
-    function = self.function
-    layer = self.bottom
-    layer[i] = value
-
-    for layer_above in self.data[1:]:
-      i >>= 1
-      j = i << 1
-      layer_above[i] = function(layer[j], layer[j + 1])
-      layer = layer_above
-
-  def query(self, qbgn, qend):
-    vals = []
-    #segs = []
-
-    q = qbgn
-    for l, ssize, data in self.zip:
-      if q & ssize and q + ssize <= qend:
-        #segs.append((q, ssize))
-        vals.append(data[q >> l])
-        q += ssize
-
-    for l, ssize, data in reversed(self.zip):
-      if q + ssize <= qend:
-        #segs.append((q, ssize))
-        vals.append(data[q >> l])
-        q += ssize
-
-    retval = vals[0]
-    for val in vals[1:]:
-      retval = self.function(retval, val)
-
-    #return segs
-    return retval
-
-  def __str__(self):
-    s = []
-    for l, row in enumerate(self.data[::-1]):
-      s.append('{:2d} {}'.format(l, row))
-    return '\n'.join(s)
-
-
-N, Q = map(int, input().split())
-A = list(map(int, input().split()))
-
 mod = 998244353
 
-A0 = A
-A1 = [(N - i) * a % mod for i, a in enumerate(A)]
-A2 = [(N - i) * (N - i + 1) // 2 * a % mod for i, a in enumerate(A)]
+N, D = map(int, input().split())
 
-st0 = SegTree(N, lambda x, y: (x + y) % mod, 0, A0)
-st1 = SegTree(N, lambda x, y: (x + y) % mod, 0, A1)
-st2 = SegTree(N, lambda x, y: (x + y) % mod, 0, A2)
+F = [1]
+Finv = [1]
+for i in range(1, D + 10):
+    F.append(F[-1] * i % mod)
+    Finv.append(pow(F[-1], mod - 2, mod))
 
-ans = []
 
-for _ in range(Q):
-  query = tuple(map(int, input().split()))
+def binom(n, k):
+    if n < 0 or n < k:
+        return 0
+    return F[n] * Finv[n - k] * Finv[k] % mod
 
-  if query[0] == 1:
-    _, i, v = query
-    i -= 1
-    st0.update(i, v)
-    st1.update(i, (N - i) * v % mod)
-    st2.update(i, (N - i) * (N - i + 1) // 2 * v % mod)
 
-  if query[0] == 2:
-    _, x = query
+ans = 1
+for k in range(1, D + 2):
+    c00 = binom(D - 1, k)
+    c01 = binom(D - 1, k - 1)
+    c11 = binom(D - 1, k - 2) if k >= 2 else 0
+    c10 = c01
 
-    c1 = x - N
-    c0 = x * (x + 1) // 2 - c1 * N - N * (N + 1) // 2
+    d00 = d11 = 1
+    d01 = d10 = 0
+    for i in range(50):
+        bit = 1 << i
+        if N & bit:
+            e00 = (d00 * c00 + d01 * c10) % mod
+            e01 = (d00 * c01 + d01 * c11) % mod
+            e11 = (d10 * c01 + d11 * c11) % mod
 
-    v0 = st0.query(0, x)
-    v1 = st1.query(0, x)
-    v2 = st2.query(0, x)
+            d00 = e00
+            d01 = d10 = e01
+            d11 = e11
 
-    a = v2 + c1 * v1 + c0 * v0
-    ans.append(a % mod)
+        f00 = (c00 * c00 + c01 * c10) % mod
+        f01 = (c00 * c01 + c01 * c11) % mod
+        f11 = (c10 * c01 + c11 * c11) % mod
 
-for a in ans:
-  print(a)
+        c00 = f00
+        c01 = c10 = f01
+        c11 = f11
+
+    ans += d00 + d11
+    ans %= mod
+
+print(ans)

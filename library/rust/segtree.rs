@@ -1,86 +1,116 @@
-struct SegmentTree<T, F> {
-    layers: Vec<Vec<T>>,
-    function: F,
-}
-
-impl<T, F> std::fmt::Debug for SegmentTree<T, F>
-where
-    T: std::fmt::Debug,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "SegTree {{")?;
-        for (i, layer) in self.layers.iter().enumerate() {
-            writeln!(f, "  {} : {:?}", i, layer)?;
-        }
-        // writeln!(f, "{:?}", self.layers)?;
-        write!(f, "}}")
+mod segtree {
+    pub trait Monoid {
+        fn identity() -> Self;
+        fn operate(self: &Self, rhs: &Self) -> Self;
     }
-}
 
-impl<T, F> SegmentTree<T, F>
-where
-    T: std::clone::Clone,
-    F: Fn(&T, &T) -> T,
-{
-    fn new(length: usize, identity: &T, function: F) -> SegmentTree<T, F> {
-        let mut layers = Vec::new();
-        let mut n = 1;
-        loop {
-            layers.push(vec![identity.clone(); n]);
-            if n >= length {
-                break;
+    pub struct SegmentTree<T> {
+        data: Vec<T>,
+        depth: usize,
+    }
+
+    use std::fmt::{Debug, Formatter, Result};
+    impl<T: Debug> Debug for SegmentTree<T> {
+        fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+            writeln!(f, "SegTree {{")?;
+            for d in 0..self.depth {
+                let l = 1 << d;
+                let layer = &self.data[l..l << 1];
+                writeln!(f, "{d:>2} : {layer:?}")?;
             }
-            n *= 2;
-        }
-
-        SegmentTree { layers, function }
-    }
-
-    fn update(&mut self, i: usize, value: T) {
-        let mut i = i;
-        let layers = &mut self.layers;
-
-        if let Some(last) = layers.last_mut() {
-            last[i] = value;
-        }
-
-        for l in (0..layers.len() - 1).rev() {
-            i >>= 1;
-            // layers[l][i] = std::cmp::max(layers[l + 1][i * 2], layers[l + 1][i * 2 + 1]);
-            layers[l][i] = (self.function)(&layers[l + 1][i * 2], &layers[l + 1][i * 2 + 1]);
+            write!(f, "}}")
         }
     }
 
-    fn query(&self, bgn: usize, end: usize) -> T {
-        return self.query_inner(bgn, end, 0);
+    impl<T: std::clone::Clone + Monoid> SegmentTree<T> {
+        pub fn new(length: usize) -> SegmentTree<T> {
+            let depth = length.next_power_of_two().ilog2() as usize + 1;
+
+            SegmentTree {
+                data: vec![T::identity(); 1 << depth],
+                depth,
+            }
+        }
+
+        pub fn update(&mut self, i: usize, value: T) {
+            let SegmentTree { data, depth } = self;
+            let mut i = i + (1 << (*depth - 1));
+
+            data[i] = value;
+
+            for _ in 1..*depth {
+                i = i >> 1;
+                let j = i << 1;
+                data[i] = T::operate(&data[j], &data[j + 1]);
+            }
+        }
+
+        pub fn query(&self, l: usize, r: usize) -> T {
+            let depth = self.depth;
+
+            let mut l = l + (1 << (depth - 1));
+            let mut r = r + (1 << (depth - 1));
+
+            let mut ll = vec![];
+            let mut rr = vec![];
+
+            for _ in 0..depth {
+                if r <= l {
+                    break;
+                }
+
+                if l & 1 == 1 {
+                    ll.push(l);
+                    l += 1;
+                }
+                if r & 1 == 1 {
+                    rr.push(r ^ 1);
+                }
+
+                l >>= 1;
+                r >>= 1;
+            }
+
+            let mut ii = ll;
+            ii.extend(rr.iter().rev());
+
+            ii.iter().fold(T::identity(), |acc, &i| T::operate(&acc, &self.data[i]))
+        }
+
+        pub fn get(&mut self, i: usize) -> T {
+            let depth = self.depth;
+            let mut i = i + (1 << (depth - 1));
+            self.data[i]
+        }
+    }
+}
+
+use segtree::*;
+
+impl Monoid for i64 {
+    fn identity() -> Self {
+        0
     }
 
-    fn query_inner(&self, bgn: usize, end: usize, l: usize) -> T {
-        let n = self.layers.last().unwrap().len();
-        let segsize = n >> l;
+    fn operate(&self, rhs: &Self) -> Self {
+        std::cmp::max(*self, *rhs)
+    }
+}
 
-        if bgn % segsize == 0 && bgn + segsize == end {
-            return self.layers[l][bgn / segsize].clone();
-        }
+impl Monoid for (i64, i64) {
+    fn identity() -> Self {
+        (0, 0)
+    }
 
-        let mid = (bgn / segsize) * segsize + segsize / 2;
-
-        if (end <= mid) || (mid <= bgn) {
-            return self.query_inner(bgn, end, l + 1);
-        }
-
-        let lvalue = self.query_inner(bgn, mid, l + 1);
-        let rvalue = self.query_inner(mid, end, l + 1);
-
-        // return std::cmp::max(lvalue, rvalue);
-        return (self.function)(&lvalue, &rvalue);
+    fn operate(&self, rhs: &Self) -> Self {
+        (self.0 + rhs.0, self.1 + rhs.1)
     }
 }
 
 fn main() {
-    let mut st = SegmentTree::new(7, &0, |&l, &r| std::cmp::max(l, r));
+    let mut st = SegmentTree::new(7);
     st.update(3, 12);
-    // [0, 0, 0, 3, 0, 0, 0]
+    // [0, 0, 0, 12, 0, 0, 0]
 
     println!("{:?}", st);
 
@@ -91,17 +121,17 @@ fn main() {
     assert_eq!(st.query(0, 3), 0);
     assert_eq!(st.query(4, 8), 0);
 
-    let mut st = SegmentTree::new(7, &0, |&l, &r| l + r);
-    st.update(3, 4);
-    st.update(6, 9);
-    st.update(2, 1);
-    st.update(1, 3);
+    let mut st = SegmentTree::new(7);
+    st.update(3, (4, 1));
+    st.update(6, (9, 2));
+    st.update(2, (1, 3));
+    st.update(1, (3, 4));
     // [0, 3, 1, 4, 0, 0, 9]
 
     println!("{:?}", st);
 
-    assert_eq!(st.query(0, 2), 3);
-    assert_eq!(st.query(1, 3), 4);
-    assert_eq!(st.query(1, 4), 8);
-    assert_eq!(st.query(2, 5), 5);
+    assert_eq!(st.query(0, 2).0, 3);
+    assert_eq!(st.query(1, 3).0, 4);
+    assert_eq!(st.query(1, 4).0, 8);
+    assert_eq!(st.query(2, 5).0, 5);
 }
