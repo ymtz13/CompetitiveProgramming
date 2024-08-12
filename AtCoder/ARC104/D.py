@@ -1,26 +1,38 @@
-N, S = input().split()
-nA = nT = nC = nG = 0
-ans = 0
-X = {(0,0): 1}
+N, K, mod = map(int, input().split())
 
-for c in S:
-    if c=='A': nA+=1
-    if c=='T': nT+=1
-    if c=='C': nC+=1
-    if c=='G': nG+=1
+T = 1300 * K
 
-    dAT = nA - nT
-    dCG = nC - nG
-    k = (dAT, dCG)
-    if k in X:
-        ans += X[k]
-        X[k] += 1
-    else:
-        X[k] = 1
+dp = [[0] * T]
+dp[0][0] = 1
 
-print(ans)
+for n in range(1, N + 1):
+    s = dp[-1][:]
+    for k in range(n, T):
+        s[k] += s[k - n]
+        s[k] %= mod
 
-    
-    
+    dp_next = [0] * T
+    for i in range(T):
+        v = s[i]
+        j = i - n * (K + 1)
+        if j >= 0:
+            v -= s[j]
+        dp_next[i] = v % mod
 
-    
+    dp.append(dp_next)
+    # print(n, dp_next[:20])
+
+for n in range(1, N + 1):
+    l = n - 1
+    r = N - n
+    # print(l, r, dp[l][:10], dp[r][:10])
+
+    v = 0
+    for vl, vr in zip(dp[l], dp[r]):
+        v += vl * vr % mod
+        v %= mod
+
+    v *= K + 1
+    v %= mod
+
+    print((v - 1) % mod)
